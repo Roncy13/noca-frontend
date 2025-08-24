@@ -1,6 +1,7 @@
 import React, {
   Box,
   Button,
+  MenuItem,
   Paper,
   TextField,
   Typography,
@@ -27,6 +28,7 @@ export default function AskWhatToCreate() {
       jurisdiction: formData.jurisdiction || "",
       industry: formData.industry || "",
       otherDetails: formData.otherDetails || "",
+      fontFamily: formData.fontFamily || "",
     },
   });
   const [loading, setLoading] = useState(false);
@@ -130,6 +132,32 @@ export default function AskWhatToCreate() {
                 error={!!errors.industry}
                 helperText={errors.industry?.message}
               />
+            )}
+          />
+
+          <Controller
+            name="fontFamily"
+            control={control}
+            disabled={loading}
+            render={({ field }) => (
+              <TextField
+                select
+                label="Font Family"
+                fullWidth
+                {...field}
+                error={!!errors.fontFamily}
+                helperText={errors.fontFamily?.message}
+              >
+                {["Arial", "Helvetica", "sans-serif"].map((font) => (
+                  <MenuItem
+                    key={font}
+                    value={font}
+                    style={{ fontFamily: font }}
+                  >
+                    {font}
+                  </MenuItem>
+                ))}
+              </TextField>
             )}
           />
 

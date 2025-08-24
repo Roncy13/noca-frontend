@@ -12,6 +12,7 @@ export interface FormData {
     answer: string;
   }[];
   sections: string[];
+  fontFamily: string;
 }
 
 // ----- 2. Define the context value -----
@@ -42,6 +43,7 @@ export const FormProvider: React.FC<{ children: ReactNode }> = ({
           topics: [],
           questions: [],
           sections: [],
+          fontFamily: "",
         };
   });
 
@@ -68,6 +70,7 @@ export const FormProvider: React.FC<{ children: ReactNode }> = ({
       topics: [],
       questions: [],
       sections: [],
+      fontFamily: "",
     });
   };
 

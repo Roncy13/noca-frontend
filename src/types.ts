@@ -8,6 +8,7 @@ export interface IWhatToCreate {
   jurisdiction: string;
   industry: string;
   otherDetails: string;
+  fontFamily: string;
 }
 
 export interface IFollowupQuestion {
