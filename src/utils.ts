@@ -7,7 +7,10 @@ export function GenerateFormValue() {
   } as IFormValue;
 }
 
-export const renderClauseHTML = (data: IGenerateSectionContent) => {
+export const renderClauseHTML = (
+  data: IGenerateSectionContent,
+  index: number
+) => {
   const { section, clause, subClause } = data;
 
   // Convert subClauses into HTML list items
@@ -20,7 +23,7 @@ export const renderClauseHTML = (data: IGenerateSectionContent) => {
   // Combine everything into one HTML string
   const htmlString = `
     <div>
-      <h3>${section}</h3>
+      <h3>Section ${index + 1}: ${section}</h3>
       <p>${clause}</p>
       <ul>
         ${subClauseHTML}

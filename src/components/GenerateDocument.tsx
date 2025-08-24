@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useFormContext } from "../context/DocumentContext";
 import {
   Box,
@@ -20,8 +20,11 @@ export default function GenerateDocment() {
   const [sections, setSections] = useState<IGenerateSectionContent[]>([]);
 
   const [number, setNumber] = useState(0);
-
+  const didRun = useRef(false);
   const setSectionContent = async (index: number) => {
+    if (loading) {
+      return;
+    }
     setLoading(true);
 
     const outline = formData.sections[index];
@@ -36,17 +39,21 @@ export default function GenerateDocment() {
     });
     setSections([...sections, result]);
     setLoading(false);
-    if (number < formData.sections.length) {
+    if (number < formData.topics.length) {
       setNumber(number + 1);
     }
   };
 
-  //   useEffect(() => {
-  //     console.log(number, "dsada");
-  //     if (!loading) {
-  //       setSectionContent(number);
-  //     }
-  //   }, [number]);
+  useEffect(() => {
+    if (didRun.current) return; // prevent re-run
+    didRun.current = true;
+    setSectionContent(number);
+  }, []);
+  useEffect(() => {
+    if (number > 0) {
+      setSectionContent(number);
+    }
+  }, [number]);
   return (
     <Paper
       elevation={3}
@@ -79,7 +86,7 @@ export default function GenerateDocment() {
           sx={{
             display: "flex",
             flexDirection: "row", // put items in one line
-            justifyContent: "center", // center horizontally
+            justifyContent: "left", // center horizontally
             alignItems: "center", // center vertically
             textAlign: "center",
             marginBottom: 3,
@@ -88,7 +95,7 @@ export default function GenerateDocment() {
             gap: 1, // space between text and loader
           }}
         >
-          <Typography variant="body1" fontWeight="bold">
+          <Typography variant="body1">
             {`Generating section no: ${number + 1}`}
           </Typography>
           <Loader />
@@ -116,7 +123,9 @@ export default function GenerateDocment() {
           >
             <Typography
               component="div"
-              dangerouslySetInnerHTML={{ __html: renderClauseHTML(form) }}
+              dangerouslySetInnerHTML={{
+                __html: renderClauseHTML(form, index),
+              }}
             />
             <Divider sx={{ width: "100%" }} />
           </Box>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useFormContext } from "../context/DocumentContext";
 import { Box, Paper, Typography, TextField, Button } from "@mui/material";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -17,8 +17,9 @@ interface ITopics {
 export default function FollowupQuestions() {
   const { formData, setFormData } = useFormContext();
   const [loading, setLoading] = useState(false);
+  const [generatingContent, setGeneratingContent] = useState(false);
   const navigate = useNavigate();
-
+  const didRun = useRef(false);
   const {
     handleSubmit,
     control,
@@ -35,90 +36,78 @@ export default function FollowupQuestions() {
     },
   });
 
-  // watch values
   const questionValue = useWatch({ control, name: "question" });
   const suggestedAnswerValue = useWatch({ control, name: "suggestedAnswer" });
   const answerValue = useWatch({ control, name: "answer" });
   const numberValue = useWatch({ control, name: "number" });
 
-  /**
-   * Load a follow-up question for the current number
-   */
-  const getFollowupQuestion = useCallback(async () => {
-    if (loading) {
-      return;
-    }
-    const { number } = getValues();
-    const topic = formData.topics[number - 1];
+  // Fetch followup question
+  const getFollowupQuestion = useCallback(
+    async (number: number) => {
+      const topic = formData.topics[number - 1];
+      if (!topic) return;
 
-    if (!topic) return; // no more topics
+      setLoading(true);
+      await new Promise((resolve) => setTimeout(resolve, 50)); // let React paint loader
 
-    setLoading(true);
-
-    try {
-      const result = await generateFollowupQuestion({
-        ...formData,
-        topic,
-      });
-
-      setValue("question", result.question || "");
-      setValue("answer", "");
-      setValue("suggestedAnswer", result.suggested_answer || "");
-    } finally {
-      setLoading(false);
-    }
-  }, [formData, getValues, setValue]);
-
-  /**
-   * Handle submit and move to next question
-   */
-  const onSubmit = async () => {
-    const { number } = getValues();
-    const nextNumber = number + 1;
-
-    // Save current Q&A
-    const questions = [
-      ...(formData?.questions || []),
-      {
-        question: questionValue,
-        answer: answerValue,
-      },
-    ];
-
-    setFormData({
-      ...formData,
-      questions,
-    });
-
-    if (nextNumber <= formData.topics.length) {
-      // Go to next question
-      setValue("number", nextNumber);
-    } else {
-      // All questions answered → generate draft
-      const result = await generateDraftSections({
-        ...formData,
-        supportingDetails: questions.map((r) => `${r.question} ${r.answer}`),
-      });
-
-      setFormData({
-        ...formData,
-        sections: result.sections,
-      });
-    }
-  };
+      try {
+        const result = await generateFollowupQuestion({ ...formData, topic });
+        setValue("question", result.question || "");
+        setValue("answer", "");
+        setValue("suggestedAnswer", result.suggested_answer || "");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [formData, setValue]
+  );
 
   useEffect(() => {
-    if (!numberValue) return;
+    if (numberValue > 1) {
+      getFollowupQuestion(numberValue);
+    }
+  }, [numberValue, getFollowupQuestion]);
 
-    // Call followup question when number changes
-    getFollowupQuestion();
-  }, [numberValue]); // re-run when number changes
+  useEffect(() => {
+    if (didRun.current) return; // prevent re-run
+    didRun.current = true;
+    getFollowupQuestion(1);
+  }, [getFollowupQuestion]);
 
   useEffect(() => {
     if (formData?.sections?.length > 0) {
       navigate("/generate-document", { replace: true });
     }
-  }, [formData]); // re-run when number changes
+  }, [formData, navigate]);
+
+  const onSubmit = async () => {
+    const { number } = getValues();
+    const nextNumber = number + 1;
+
+    // Save current answer
+    const questions = [
+      ...(formData?.questions || []),
+      { question: questionValue, answer: answerValue },
+    ];
+    setFormData({ ...formData, questions });
+
+    if (nextNumber <= formData.topics.length) {
+      // Move to next question
+      setValue("number", nextNumber);
+      await getFollowupQuestion(nextNumber); // fetch next question
+    } else {
+      // All questions done → generate draft
+      setGeneratingContent(true);
+      const result = await generateDraftSections({
+        ...formData,
+        supportingDetails: questions.map((r) => `${r.question} ${r.answer}`),
+      });
+
+      setFormData({ ...formData, sections: result.sections });
+      navigate("/generate-document", { replace: true });
+    }
+  };
+
   return (
     <Box
       display="flex"
@@ -127,7 +116,6 @@ export default function FollowupQuestions() {
       height="100vh"
     >
       <Paper
-        elevation={3}
         sx={{
           width: "70%",
           margin: "2rem auto",
@@ -135,7 +123,6 @@ export default function FollowupQuestions() {
           borderRadius: "12px",
         }}
       >
-        {/* Header */}
         <Box
           sx={{
             textAlign: "center",
@@ -149,17 +136,33 @@ export default function FollowupQuestions() {
           </Typography>
         </Box>
 
-        {/* Content */}
-        {!loading ? (
+        {loading ? (
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            gap={2}
+          >
+            <Typography variant="body1">{`Generating question number ${numberValue}...`}</Typography>
+            <Loader />
+          </Box>
+        ) : generatingContent ? (
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            gap={2}
+          >
+            <Typography variant="body1">Generating draft content...</Typography>
+            <Loader />
+          </Box>
+        ) : (
           <Box
             component="form"
             onSubmit={handleSubmit(onSubmit)}
             sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
-            {/* Question */}
             <Typography variant="body1">{questionValue}</Typography>
-
-            {/* Answer input */}
             <Controller
               name="answer"
               control={control}
@@ -176,7 +179,6 @@ export default function FollowupQuestions() {
                 />
               )}
             />
-
             <Button
               type="submit"
               variant="contained"
@@ -185,18 +187,6 @@ export default function FollowupQuestions() {
             >
               Next
             </Button>
-          </Box>
-        ) : (
-          <Box
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            gap={2}
-          >
-            <Typography variant="body1">
-              {`Generating question number ${numberValue}...`}
-            </Typography>
-            <Loader />
           </Box>
         )}
       </Paper>

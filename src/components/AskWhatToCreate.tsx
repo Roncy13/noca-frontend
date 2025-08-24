@@ -1,16 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { Box, TextField, Button, Typography, Paper } from "@mui/material";
-import { IWhatToCreate } from "../types";
-import Loader from "./Loader";
+import React, {
+  Box,
+  Button,
+  Paper,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { generateTopics } from "../api";
 import { useFormContext } from "../context/DocumentContext";
-import { useNavigate } from "react-router-dom";
+import { IWhatToCreate } from "../types";
+import Loader from "./Loader";
 
 export default function AskWhatToCreate() {
   const navigate = useNavigate();
   const { formData, setFormData } = useFormContext();
-
   const {
     handleSubmit,
     control,
