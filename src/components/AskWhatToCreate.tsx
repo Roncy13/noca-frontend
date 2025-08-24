@@ -4,8 +4,12 @@ import { Box, TextField, Button, Typography, Paper } from "@mui/material";
 import { IWhatToCreate } from "../types";
 import Loader from "./Loader";
 import { generateTopics } from "../api";
+import { useFormContext } from "../context/DocumentContext";
+import { useNavigate } from "react-router-dom";
 
-export default function OrderForm() {
+export default function AskWhatToCreate() {
+  const navigate = useNavigate();
+
   const {
     handleSubmit,
     control,
@@ -19,6 +23,7 @@ export default function OrderForm() {
     },
   });
   const [loading, setLoading] = useState(false);
+  const { formData, setFormData } = useFormContext();
 
   const onSubmit = async (data: IWhatToCreate) => {
     console.log("Form submitted:", data);
@@ -27,6 +32,14 @@ export default function OrderForm() {
     const topics = await generateTopics(data);
     console.log(topics, " topics ");
     setLoading(false);
+
+    setFormData({
+      ...formData,
+      ...data,
+      topics,
+    });
+
+    navigate("/followup-question", { replace: true });
   };
 
   return (

@@ -1,5 +1,4 @@
 import { IFormValue } from "./types";
-import Joi from "joi";
 
 export function GenerateFormValue() {
   return {

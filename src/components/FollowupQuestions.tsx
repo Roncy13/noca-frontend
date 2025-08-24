@@ -1,5 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useFormContext } from "../context/DocumentContext";
 
-const FollowupQuestions: React.FC = () => <h1>Followup Questions</h1>;
+export default function FollowupQuestions() {
+  const { formData, setFormData } = useFormContext();
 
-export default FollowupQuestions;
+  useEffect(() => {
+    console.log(formData, new Date());
+  }, []);
+  return <div>12312</div>;
+}
