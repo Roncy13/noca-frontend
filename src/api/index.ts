@@ -89,3 +89,15 @@ export async function updateLogoAndFont(
 
   return getApiResult<any>(response);
 }
+
+export async function updateContent(
+  content: string,
+  index: number
+): Promise<IGenerateSectionContent> {
+  const response = await axiosApi.post<{ result: IGenerateSectionContent }>(
+    "/documents/updateContent",
+    { content, index }
+  );
+
+  return getApiResult<IGenerateSectionContent>(response);
+}

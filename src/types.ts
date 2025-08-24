@@ -1,3 +1,5 @@
+declare module "@tiptap/react";
+declare module "@tiptap/starter-kit";
 export interface IFormValue {
   value: string;
   error: string | null;
