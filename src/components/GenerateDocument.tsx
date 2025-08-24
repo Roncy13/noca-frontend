@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useFormContext } from "../context/DocumentContext";
 
 import { useNavigate } from "react-router-dom";
-import { BASE_URL, generateSectionContent } from "../api";
+import { BASE_URL, generateSectionContent, updateLogoAndFont } from "../api";
 import { IGenerateSectionContent } from "../types";
 import { renderClauseHTML } from "../utils";
 import Loader from "./Loader";
@@ -107,14 +107,21 @@ export default function GenerateDocment() {
           }}
         >
           <Typography variant="body1">
-            {`Generating section no: ${number}`}
+            {`Generating section no: ${number + 1}`}
           </Typography>
           <Loader />
         </Box>
       ) : (
         <></>
       )}
-
+      {/* Logo */}
+      <Box sx={{ textAlign: "center", mb: 1 }}>
+        <img
+          src={formData.logo}
+          alt={"Your Logo"}
+          style={{ maxWidth: "200px", height: "auto" }}
+        />
+      </Box>
       {/* Scrollable Content */}
       <Box
         sx={{
@@ -134,6 +141,7 @@ export default function GenerateDocment() {
           >
             <Typography
               component="div"
+              fontFamily={formData.fontFamily}
               dangerouslySetInnerHTML={{
                 __html: renderClauseHTML(form, index),
               }}
@@ -147,7 +155,6 @@ export default function GenerateDocment() {
           type="button"
           variant="contained"
           color="primary"
-          startIcon={<PrintIcon />}
           onClick={() => {
             clearStorage();
             setTimeout(() => {
@@ -155,7 +162,7 @@ export default function GenerateDocment() {
             }, 500);
           }}
         >
-          Reset Values
+          Return to Home
         </Button>
         {showPrint ? (
           <Button
@@ -163,9 +170,10 @@ export default function GenerateDocment() {
             variant="contained"
             color="success"
             startIcon={<PrintIcon />}
-            onClick={() =>
-              window.open(`${BASE_URL}/documents/documentPrint`, "_blank")
-            }
+            onClick={async () => {
+              await updateLogoAndFont(formData.fontFamily, formData.logo);
+              window.open(`${BASE_URL}/documents/documentPrint`, "_blank");
+            }}
           >
             Print
           </Button>

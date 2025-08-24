@@ -9,6 +9,7 @@ export interface IWhatToCreate {
   industry: string;
   otherDetails: string;
   fontFamily: string;
+  logo: string;
 }
 
 export interface IFollowupQuestion {

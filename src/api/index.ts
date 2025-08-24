@@ -77,3 +77,15 @@ export async function generateSectionContent(
 
   return getApiResult<IGenerateSectionContent>(response);
 }
+
+export async function updateLogoAndFont(
+  font: string,
+  logo: string
+): Promise<any> {
+  const response = await axiosApi.post<{ result: any }>(
+    "/documents/attachInformation",
+    { font, logo }
+  );
+
+  return getApiResult<any>(response);
+}

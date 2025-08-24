@@ -14,7 +14,14 @@ import { useFormContext } from "../context/DocumentContext";
 import { IWhatToCreate } from "../types";
 import Loader from "./Loader";
 import { ArrowRight } from "@mui/icons-material";
-
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
 export default function AskWhatToCreate() {
   const navigate = useNavigate();
   const { formData, setFormData } = useFormContext();
@@ -22,6 +29,7 @@ export default function AskWhatToCreate() {
     handleSubmit,
     control,
     formState: { errors },
+    setValue,
   } = useForm<IWhatToCreate>({
     defaultValues: {
       type: formData.type || "",
@@ -29,16 +37,18 @@ export default function AskWhatToCreate() {
       industry: formData.industry || "",
       otherDetails: formData.otherDetails || "",
       fontFamily: formData.fontFamily || "",
+      logo: formData.logo || "",
     },
   });
+
   const [loading, setLoading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
 
   const onSubmit = async (data: IWhatToCreate) => {
-    // Call API or process form data
     setLoading(true);
     const result = await generateTopics(data);
     setLoading(false);
-    console.log(result.topics, "result");
+
     setFormData({
       ...formData,
       ...data,
@@ -50,7 +60,8 @@ export default function AskWhatToCreate() {
     if (formData?.topics?.length > 0) {
       navigate("/followup-question", { replace: true });
     }
-  }, [formData]);
+  }, [formData, navigate]);
+
   return (
     <Box
       display="flex"
@@ -87,6 +98,7 @@ export default function AskWhatToCreate() {
           onSubmit={handleSubmit(onSubmit)}
           sx={{ display: "flex", flexDirection: "column", gap: 2 }}
         >
+          {/* Type */}
           <Controller
             name="type"
             control={control}
@@ -103,6 +115,7 @@ export default function AskWhatToCreate() {
             )}
           />
 
+          {/* Jurisdiction */}
           <Controller
             name="jurisdiction"
             control={control}
@@ -110,7 +123,7 @@ export default function AskWhatToCreate() {
             disabled={loading}
             render={({ field }) => (
               <TextField
-                label="Jurisdiction: Ex: Philippines, United States, Australia, Singapre"
+                label="Jurisdiction: Ex: Philippines, United States, Australia, Singapore"
                 fullWidth
                 {...field}
                 error={!!errors.jurisdiction}
@@ -119,6 +132,7 @@ export default function AskWhatToCreate() {
             )}
           />
 
+          {/* Industry */}
           <Controller
             name="industry"
             control={control}
@@ -135,9 +149,11 @@ export default function AskWhatToCreate() {
             )}
           />
 
+          {/* Font Family */}
           <Controller
             name="fontFamily"
             control={control}
+            rules={{ required: "Font is required" }}
             disabled={loading}
             render={({ field }) => (
               <TextField
@@ -161,6 +177,61 @@ export default function AskWhatToCreate() {
             )}
           />
 
+          {/* Logo Upload */}
+          <Controller
+            name="logo"
+            control={control}
+            rules={{ required: "Logo is required" }} // ✅ add validation rule here
+            render={({ field: { onChange }, fieldState: { error } }) => (
+              <Box>
+                <Button
+                  variant="contained"
+                  component="label"
+                  disabled={loading}
+                >
+                  Upload Logo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        onChange(file);
+                        setPreview(URL.createObjectURL(file));
+                        const fileValue = await fileToBase64(file);
+                        setValue("logo", fileValue);
+                      }
+                    }}
+                  />
+                </Button>
+
+                {/* Show error message if no logo */}
+                {error && (
+                  <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                    {error.message}
+                  </Typography>
+                )}
+
+                {preview && (
+                  <Box mt={2}>
+                    <img
+                      src={preview}
+                      alt="Logo Preview"
+                      style={{
+                        maxWidth: "200px",
+                        maxHeight: "200px",
+                        borderRadius: "8px",
+                        border: "1px solid #ccc",
+                      }}
+                    />
+                  </Box>
+                )}
+              </Box>
+            )}
+          />
+
+          {/* Other Details */}
           <Controller
             name="otherDetails"
             control={control}
@@ -177,6 +248,8 @@ export default function AskWhatToCreate() {
               />
             )}
           />
+
+          {/* Submit Button */}
           <Box display="flex" justifyContent="flex-end" mt={2}>
             <Button
               disabled={loading}

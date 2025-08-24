@@ -170,7 +170,11 @@ export default function FollowupQuestions() {
                   error={!!errors.answer}
                   multiline
                   rows={4}
-                  helperText={`Suggested Answer: ${suggestedAnswerValue}`}
+                  helperText={`Suggested Answer: ${
+                    suggestedAnswerValue.length > 0
+                      ? suggestedAnswerValue
+                      : "___________"
+                  }`}
                 />
               )}
             />
