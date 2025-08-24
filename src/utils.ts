@@ -11,7 +11,7 @@ export const renderClauseHTML = (
   data: IGenerateSectionContent,
   index: number
 ) => {
-  const { section, clause, subClause } = data;
+  const { section, clause, subClause = [] } = data;
 
   // Convert subClauses into HTML list items
   const subClauseHTML = subClause

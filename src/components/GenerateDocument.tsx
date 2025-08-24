@@ -1,23 +1,21 @@
-import React, { useEffect, useRef, useState } from "react";
+import PrintIcon from "@mui/icons-material/Print";
+import { Box, Button, Divider, Paper, Typography } from "@mui/material";
+import { useEffect, useRef, useState } from "react";
 import { useFormContext } from "../context/DocumentContext";
-import {
-  Box,
-  Button,
-  Divider,
-  Paper,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { Controller } from "react-hook-form";
-import Loader from "./Loader";
-import { generateSectionContent } from "../api";
+
+import { useNavigate } from "react-router-dom";
+import { BASE_URL, generateSectionContent } from "../api";
 import { IGenerateSectionContent } from "../types";
 import { renderClauseHTML } from "../utils";
+import Loader from "./Loader";
 
 export default function GenerateDocment() {
-  const { formData, setFormData } = useFormContext();
+  const navigate = useNavigate();
+
+  const { formData, clearStorage } = useFormContext();
   const [loading, setLoading] = useState(false);
   const [sections, setSections] = useState<IGenerateSectionContent[]>([]);
+  const [showPrint, setShowPrint] = useState(false);
 
   const [number, setNumber] = useState(0);
   const didRun = useRef(false);
@@ -37,23 +35,36 @@ export default function GenerateDocment() {
         (r) => `${r.question} ${r.answer}`
       ),
     });
-    setSections([...sections, result]);
+
     setLoading(false);
-    if (number < formData.topics.length) {
-      setNumber(number + 1);
-    }
+    setSections([...sections, result]);
   };
+
+  useEffect(() => {
+    console.log(
+      sections,
+      " sections ",
+      sections.length < formData.sections.length && sections.length > 0
+    );
+    if (sections.length < formData.sections.length && sections.length > 0) {
+      console.log(sections.length, formData.sections.length, " ll");
+      console.log("section set");
+      setSectionContent(sections.length);
+    }
+    setNumber(sections.length);
+  }, [sections]);
 
   useEffect(() => {
     if (didRun.current) return; // prevent re-run
     didRun.current = true;
     setSectionContent(number);
   }, []);
+
   useEffect(() => {
-    if (number > 0) {
-      setSectionContent(number);
+    if (sections.length > 0) {
+      setShowPrint(true);
     }
-  }, [number]);
+  }, [formData, sections]);
   return (
     <Paper
       elevation={3}
@@ -96,7 +107,7 @@ export default function GenerateDocment() {
           }}
         >
           <Typography variant="body1">
-            {`Generating section no: ${number + 1}`}
+            {`Generating section no: ${number}`}
           </Typography>
           <Loader />
         </Box>
@@ -130,6 +141,37 @@ export default function GenerateDocment() {
             <Divider sx={{ width: "100%" }} />
           </Box>
         ))}
+      </Box>
+      <Box display="flex" justifyContent="flex-end" mt={2} gap={2}>
+        <Button
+          type="button"
+          variant="contained"
+          color="primary"
+          startIcon={<PrintIcon />}
+          onClick={() => {
+            clearStorage();
+            setTimeout(() => {
+              navigate("/");
+            }, 500);
+          }}
+        >
+          Reset Values
+        </Button>
+        {showPrint ? (
+          <Button
+            type="button"
+            variant="contained"
+            color="success"
+            startIcon={<PrintIcon />}
+            onClick={() =>
+              window.open(`${BASE_URL}/documents/documentPrint`, "_blank")
+            }
+          >
+            Print
+          </Button>
+        ) : (
+          <></>
+        )}
       </Box>
     </Paper>
   );

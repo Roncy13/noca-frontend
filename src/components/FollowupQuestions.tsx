@@ -5,6 +5,7 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import Loader from "./Loader";
 import { generateDraftSections, generateFollowupQuestion } from "../api";
 import { useNavigate } from "react-router-dom";
+import { ArrowRight } from "@mui/icons-material";
 
 interface ITopics {
   topic: string;
@@ -35,7 +36,7 @@ export default function FollowupQuestions() {
       suggestedAnswer: "",
     },
   });
-
+  const [topicsLength] = useState(formData.topics.length);
   const questionValue = useWatch({ control, name: "question" });
   const suggestedAnswerValue = useWatch({ control, name: "suggestedAnswer" });
   const answerValue = useWatch({ control, name: "answer" });
@@ -61,24 +62,6 @@ export default function FollowupQuestions() {
     },
     [formData, setValue]
   );
-
-  useEffect(() => {
-    if (numberValue > 1) {
-      getFollowupQuestion(numberValue);
-    }
-  }, [numberValue, getFollowupQuestion]);
-
-  useEffect(() => {
-    if (didRun.current) return; // prevent re-run
-    didRun.current = true;
-    getFollowupQuestion(1);
-  }, [getFollowupQuestion]);
-
-  useEffect(() => {
-    if (formData?.sections?.length > 0) {
-      navigate("/generate-document", { replace: true });
-    }
-  }, [formData, navigate]);
 
   const onSubmit = async () => {
     const { number } = getValues();
@@ -108,6 +91,18 @@ export default function FollowupQuestions() {
     }
   };
 
+  useEffect(() => {
+    if (didRun.current) return; // prevent re-run
+    didRun.current = true;
+    getFollowupQuestion(1);
+  }, []);
+
+  useEffect(() => {
+    if (formData?.sections?.length > 0) {
+      navigate("/generate-document", { replace: true });
+    }
+  }, [formData]);
+
   return (
     <Box
       display="flex"
@@ -132,7 +127,7 @@ export default function FollowupQuestions() {
           }}
         >
           <Typography variant="h4" fontWeight="bold">
-            Answer Followup Question
+            Answer Followup Question {numberValue} / {topicsLength}
           </Typography>
         </Box>
 
@@ -179,14 +174,17 @@ export default function FollowupQuestions() {
                 />
               )}
             />
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={loading}
-            >
-              Next
-            </Button>
+            <Box display="flex" justifyContent="flex-end" mt={2}>
+              <Button
+                disabled={loading}
+                type="submit"
+                variant="contained"
+                color="success"
+                endIcon={<ArrowRight />}
+              >
+                {loading ? <Loader /> : "Next"}
+              </Button>
+            </Box>
           </Box>
         )}
       </Paper>

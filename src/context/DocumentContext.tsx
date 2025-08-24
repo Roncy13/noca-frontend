@@ -20,6 +20,7 @@ interface FormContextType {
   setFormData: (
     value: Partial<FormData> | ((prev: FormData) => FormData)
   ) => void;
+  clearStorage: () => void;
 }
 
 // ----- 3. Create the context -----
@@ -39,6 +40,8 @@ export const FormProvider: React.FC<{ children: ReactNode }> = ({
           industry: "",
           otherDetails: "",
           topics: [],
+          questions: [],
+          sections: [],
         };
   });
 
@@ -55,8 +58,21 @@ export const FormProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
+  const clearStorage = () => {
+    localStorage.clear();
+    setFormDataState({
+      type: "",
+      jurisdiction: "",
+      industry: "",
+      otherDetails: "",
+      topics: [],
+      questions: [],
+      sections: [],
+    });
+  };
+
   return (
-    <FormContext.Provider value={{ formData, setFormData }}>
+    <FormContext.Provider value={{ formData, setFormData, clearStorage }}>
       {children}
     </FormContext.Provider>
   );

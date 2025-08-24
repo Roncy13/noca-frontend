@@ -5,9 +5,10 @@ import {
   IGenerateSectionContent,
   IWhatToCreate,
 } from "../types";
+export const BASE_URL = "http://localhost:4000";
 
 const axiosApi = axios.create({
-  baseURL: "http://localhost:4000",
+  baseURL: BASE_URL,
   timeout: 300_000,
   headers: {
     "Content-Type": "application/json",

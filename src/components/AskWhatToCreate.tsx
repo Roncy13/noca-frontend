@@ -12,6 +12,7 @@ import { generateTopics } from "../api";
 import { useFormContext } from "../context/DocumentContext";
 import { IWhatToCreate } from "../types";
 import Loader from "./Loader";
+import { ArrowRight } from "@mui/icons-material";
 
 export default function AskWhatToCreate() {
   const navigate = useNavigate();
@@ -148,15 +149,17 @@ export default function AskWhatToCreate() {
               />
             )}
           />
-
-          <Button
-            disabled={loading}
-            type="submit"
-            variant="contained"
-            color="primary"
-          >
-            {loading ? <Loader /> : "Next"}
-          </Button>
+          <Box display="flex" justifyContent="flex-end" mt={2}>
+            <Button
+              disabled={loading}
+              type="submit"
+              variant="contained"
+              color="success"
+              endIcon={<ArrowRight />}
+            >
+              {loading ? <Loader /> : "Next"}
+            </Button>
+          </Box>
         </Box>
       </Paper>
     </Box>
