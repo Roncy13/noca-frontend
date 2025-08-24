@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios";
-import { IWhatToCreate } from "../types";
+import { IFollowupQuestion, IWhatToCreate } from "../types";
 
 const axiosApi = axios.create({
   baseURL: "http://localhost:4000",
@@ -8,6 +8,10 @@ const axiosApi = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+interface ITopicResponse {
+  topics: string[];
+}
 
 // Make getApiResult generic
 export const getApiResult = <T>(
@@ -19,11 +23,23 @@ export const getApiResult = <T>(
 // Generate topics, returning string[]
 export async function generateTopics(
   payload: IWhatToCreate
-): Promise<string[]> {
-  const response = await axiosApi.post<{ result: string[] }>(
+): Promise<ITopicResponse> {
+  const response = await axiosApi.post<{ result: ITopicResponse }>(
     "/documents/topics",
     payload
   );
 
-  return getApiResult<string[]>(response);
+  return getApiResult<ITopicResponse>(response);
+}
+
+// Generate topics, returning string[]
+export async function generateFollowupQuestion(
+  payload: IWhatToCreate & { topic: string }
+): Promise<IFollowupQuestion> {
+  const response = await axiosApi.post<{ result: IFollowupQuestion }>(
+    "/documents/askFollowupQuestion",
+    payload
+  );
+
+  return getApiResult<IFollowupQuestion>(response);
 }

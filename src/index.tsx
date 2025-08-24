@@ -15,33 +15,14 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <FormProvider>
-              <AskWhatToCreate />
-            </FormProvider>
-          }
-        />
-        <Route
-          path="/followup-question"
-          element={
-            <FormProvider>
-              <FollowupQuestions />
-            </FormProvider>
-          }
-        />
-        <Route
-          path="/generate-document"
-          element={
-            <FormProvider>
-              <GenerateDocument />
-            </FormProvider>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
+    <FormProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<AskWhatToCreate />} />
+          <Route path="/followup-question" element={<FollowupQuestions />} />
+          <Route path="/generate-document" element={<GenerateDocument />} />
+        </Routes>
+      </BrowserRouter>
+    </FormProvider>
   </React.StrictMode>
 );

@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function AskWhatToCreate() {
   const navigate = useNavigate();
+  const { formData, setFormData } = useFormContext();
 
   const {
     handleSubmit,
@@ -16,27 +17,24 @@ export default function AskWhatToCreate() {
     formState: { errors },
   } = useForm<IWhatToCreate>({
     defaultValues: {
-      type: "",
-      jurisdiction: "",
-      industry: "",
-      otherDetails: "",
+      type: formData.type || "",
+      jurisdiction: formData.jurisdiction || "",
+      industry: formData.industry || "",
+      otherDetails: formData.otherDetails || "",
     },
   });
   const [loading, setLoading] = useState(false);
-  const { formData, setFormData } = useFormContext();
 
   const onSubmit = async (data: IWhatToCreate) => {
-    console.log("Form submitted:", data);
     // Call API or process form data
     setLoading(true);
-    const topics = await generateTopics(data);
-    console.log(topics, " topics ");
+    const result = await generateTopics(data);
     setLoading(false);
 
     setFormData({
       ...formData,
       ...data,
-      topics,
+      topics: result.topics,
     });
 
     navigate("/followup-question", { replace: true });

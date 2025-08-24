@@ -9,3 +9,8 @@ export interface IWhatToCreate {
   industry: string;
   otherDetails: string;
 }
+
+export interface IFollowupQuestion {
+  question: string;
+  suggested_answer: string;
+}

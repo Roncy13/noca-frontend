@@ -1,5 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useFormContext } from "../context/DocumentContext";
+import { Typography } from "@mui/material";
 
-const GenerateDocment: React.FC = () => <h1>Generate Document</h1>;
-
-export default GenerateDocment;
+export default function GenerateDocment() {
+  const { formData, setFormData } = useFormContext();
+  useEffect(() => {
+    console.log(formData, new Date());
+  }, []);
+  return <Typography>Generate Document</Typography>;
+}
