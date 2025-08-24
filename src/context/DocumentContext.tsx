@@ -11,6 +11,7 @@ export interface FormData {
     question: string;
     answer: string;
   }[];
+  sections: string[];
 }
 
 // ----- 2. Define the context value -----

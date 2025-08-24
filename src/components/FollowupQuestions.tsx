@@ -3,7 +3,7 @@ import { useFormContext } from "../context/DocumentContext";
 import { Box, Paper, Typography, TextField, Button } from "@mui/material";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import Loader from "./Loader";
-import { generateFollowupQuestion } from "../api";
+import { generateDraftSections, generateFollowupQuestion } from "../api";
 import { useNavigate } from "react-router-dom";
 
 interface ITopics {
@@ -42,6 +42,9 @@ export default function FollowupQuestions() {
   const numberValue = useWatch({ control, name: "number" });
 
   const getFollowupQuestion = async () => {
+    if (loading) {
+      return;
+    }
     const { number } = getValues();
     const topic = formData.topics[number - 1];
 
@@ -66,20 +69,22 @@ export default function FollowupQuestions() {
   const onSubmit = async () => {
     const { number } = getValues();
     const nextNumber = number + 1;
-
+    const questions = [
+      ...(formData?.questions || []),
+      {
+        question: questionValue,
+        answer: answerValue,
+      },
+    ];
     // Save current Q&A
     setFormData({
       ...formData,
-      questions: [
-        ...(formData?.questions || []),
-        {
-          question: questionValue,
-          answer: answerValue,
-        },
-      ],
+      questions,
     });
-
-    if (nextNumber <= formData.topics.length) {
+    if (
+      nextNumber <= formData.topics.length &&
+      formData?.questions?.length < formData?.topics?.length
+    ) {
       // move to next question
       setValue("number", nextNumber);
       setValue("answer", "");
@@ -87,6 +92,15 @@ export default function FollowupQuestions() {
       setValue("question", "");
       await getFollowupQuestion();
     } else {
+      console.log("Generating draft");
+      const result = await generateDraftSections({
+        ...formData,
+        supportingDetails: questions.map((r) => `${r.question} ${r.answer}`),
+      });
+      setFormData({
+        ...formData,
+        sections: result.sections,
+      });
       navigate("/generate-document", { replace: true });
     }
   };

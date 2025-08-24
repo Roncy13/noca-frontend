@@ -1,5 +1,10 @@
 import axios, { AxiosResponse } from "axios";
-import { IFollowupQuestion, IWhatToCreate } from "../types";
+import {
+  IFollowupQuestion,
+  IGenerateDraftSections,
+  IGenerateSectionContent,
+  IWhatToCreate,
+} from "../types";
 
 const axiosApi = axios.create({
   baseURL: "http://localhost:4000",
@@ -42,4 +47,32 @@ export async function generateFollowupQuestion(
   );
 
   return getApiResult<IFollowupQuestion>(response);
+}
+
+// Generate topics, returning string[]
+export async function generateDraftSections(
+  payload: IWhatToCreate & { supportingDetails: string[] }
+): Promise<IGenerateDraftSections> {
+  const response = await axiosApi.post<{ result: IGenerateDraftSections }>(
+    "/documents/generateDraft",
+    payload
+  );
+
+  return getApiResult<IGenerateDraftSections>(response);
+}
+
+// Generate topics, returning string[]
+export async function generateSectionContent(
+  payload: IWhatToCreate & {
+    supportingDetails: string[];
+    outline: string;
+    no: number;
+  }
+): Promise<IGenerateSectionContent> {
+  const response = await axiosApi.post<{ result: IGenerateSectionContent }>(
+    "/documents/generateSectionContent",
+    payload
+  );
+
+  return getApiResult<IGenerateSectionContent>(response);
 }

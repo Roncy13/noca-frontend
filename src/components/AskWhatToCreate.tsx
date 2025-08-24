@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Box, TextField, Button, Typography, Paper } from "@mui/material";
 import { IWhatToCreate } from "../types";
@@ -30,16 +30,19 @@ export default function AskWhatToCreate() {
     setLoading(true);
     const result = await generateTopics(data);
     setLoading(false);
-
+    console.log(result.topics, "result");
     setFormData({
       ...formData,
       ...data,
       topics: result.topics,
     });
-
-    navigate("/followup-question", { replace: true });
   };
 
+  useEffect(() => {
+    if (formData?.topics?.length > 0) {
+      navigate("/followup-question", { replace: true });
+    }
+  }, [formData]);
   return (
     <Box
       display="flex"
