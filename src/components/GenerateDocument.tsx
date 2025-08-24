@@ -41,12 +41,12 @@ export default function GenerateDocment() {
     }
   };
 
-  useEffect(() => {
-    console.log(number, "dsada");
-    if (!loading) {
-      setSectionContent(number);
-    }
-  }, [number]);
+  //   useEffect(() => {
+  //     console.log(number, "dsada");
+  //     if (!loading) {
+  //       setSectionContent(number);
+  //     }
+  //   }, [number]);
   return (
     <Paper
       elevation={3}

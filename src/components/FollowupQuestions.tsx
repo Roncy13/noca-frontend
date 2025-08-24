@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useFormContext } from "../context/DocumentContext";
 import { Box, Paper, Typography, TextField, Button } from "@mui/material";
 import { Controller, useForm, useWatch } from "react-hook-form";
@@ -41,34 +41,42 @@ export default function FollowupQuestions() {
   const answerValue = useWatch({ control, name: "answer" });
   const numberValue = useWatch({ control, name: "number" });
 
-  const getFollowupQuestion = async () => {
+  /**
+   * Load a follow-up question for the current number
+   */
+  const getFollowupQuestion = useCallback(async () => {
     if (loading) {
       return;
     }
     const { number } = getValues();
     const topic = formData.topics[number - 1];
 
+    if (!topic) return; // no more topics
+
     setLoading(true);
-    // ensure loading UI updates before API call
-    await new Promise((resolve) => setTimeout(resolve, 0));
 
     try {
       const result = await generateFollowupQuestion({
         ...formData,
         topic,
       });
-      console.log(result, " result");
-      setValue("question", result.question);
+
+      setValue("question", result.question || "");
       setValue("answer", "");
-      setValue("suggestedAnswer", result.suggested_answer);
+      setValue("suggestedAnswer", result.suggested_answer || "");
     } finally {
       setLoading(false);
     }
-  };
+  }, [formData, getValues, setValue]);
 
+  /**
+   * Handle submit and move to next question
+   */
   const onSubmit = async () => {
     const { number } = getValues();
     const nextNumber = number + 1;
+
+    // Save current Q&A
     const questions = [
       ...(formData?.questions || []),
       {
@@ -76,41 +84,41 @@ export default function FollowupQuestions() {
         answer: answerValue,
       },
     ];
-    // Save current Q&A
+
     setFormData({
       ...formData,
       questions,
     });
-    if (
-      nextNumber <= formData.topics.length &&
-      formData?.questions?.length < formData?.topics?.length
-    ) {
-      // move to next question
+
+    if (nextNumber <= formData.topics.length) {
+      // Go to next question
       setValue("number", nextNumber);
-      setValue("answer", "");
-      setValue("suggestedAnswer", "");
-      setValue("question", "");
-      await getFollowupQuestion();
     } else {
-      console.log("Generating draft");
+      // All questions answered → generate draft
       const result = await generateDraftSections({
         ...formData,
         supportingDetails: questions.map((r) => `${r.question} ${r.answer}`),
       });
+
       setFormData({
         ...formData,
         sections: result.sections,
       });
-      navigate("/generate-document", { replace: true });
     }
   };
 
-  // load first question on mount
   useEffect(() => {
-    getFollowupQuestion();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (!numberValue) return;
 
+    // Call followup question when number changes
+    getFollowupQuestion();
+  }, [numberValue]); // re-run when number changes
+
+  useEffect(() => {
+    if (formData?.sections?.length > 0) {
+      navigate("/generate-document", { replace: true });
+    }
+  }, [formData]); // re-run when number changes
   return (
     <Box
       display="flex"
@@ -148,7 +156,7 @@ export default function FollowupQuestions() {
             onSubmit={handleSubmit(onSubmit)}
             sx={{ display: "flex", flexDirection: "column", gap: 2 }}
           >
-            {/* Question (not a controlled field) */}
+            {/* Question */}
             <Typography variant="body1">{questionValue}</Typography>
 
             {/* Answer input */}
@@ -175,7 +183,7 @@ export default function FollowupQuestions() {
               color="primary"
               disabled={loading}
             >
-              {loading ? <Loader /> : "Next"}
+              Next
             </Button>
           </Box>
         ) : (
